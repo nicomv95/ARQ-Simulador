@@ -1,0 +1,14 @@
+=> camion: ABCD12345
+velocidad: 100
+ubicaciones: 10
+sin conexion: 20
+ubicaciones: 30
+sin conexion: 20
+ubicaciones: 100
+=> camion: XYZW98765
+velocidad: 120
+ubicaciones: 20
+sin conexion: 5
+ubicaciones: 15
+sin conexion: 3
+ubicaciones: 100
