@@ -28,15 +28,16 @@ class Camion(threading.Thread):
 
     def run(self):
         for entry in self.data:
-            if entry != "-":
-                if self.mode == "rest":
+            if self.mode == "rest":
+                if entry != "-":
                     self.enviar_request_response(entry)
-                elif self.mode == "mqtt":
+            elif self.mode == "mqtt":
+                if entry != "-":
                     self.enviar_mqtt(entry)
-                elif self.mode == "kafka":
-                    self.enviar_kafka(entry)
-                else:
-                    print("[{0}] {1}".format(self.camion, entry))
+            elif self.mode == "kafka":
+                self.enviar_kafka(entry)
+            else:
+                print("[{0}] {1}".format(self.camion, entry))
 
             time.sleep(self.time)
 
@@ -73,14 +74,17 @@ class Camion(threading.Thread):
         self.client.publish("gps", payload=data, qos=0, retain=False)
 
     def enviar_kafka(self, entry):
-        parts = entry.split(",")
-        data = json.dumps({
-            "timestamp": time.time(),
-            "latitud": float(parts[0]),
-            "longitud": float(parts[1]),
-            "velocidad": int(parts[2]),
-            "id_vehiculo": self.camion
-        })
+        if entry != "-":
+            parts = entry.split(",")
+            data = json.dumps({
+                "timestamp": time.time(),
+                "latitud": float(parts[0]),
+                "longitud": float(parts[1]),
+                "velocidad": int(parts[2]),
+                "id_vehiculo": self.camion
+            })
+        else:
+            data = entry
 
         self.producer.send("gps-data-gateway", value=data.encode('utf-8'))
         self.producer.flush()
