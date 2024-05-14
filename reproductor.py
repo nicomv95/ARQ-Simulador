@@ -2,11 +2,14 @@ from os import listdir
 from os.path import isfile, join
 import threading, time
 import requests
-import paho.mqtt.client as mqtt
 import json
 
 MODO = "mqtt"
 
+if MODO == "mqtt":
+    import paho.mqtt.client as mqtt
+elif MODO == "kafka":
+    from kafka import KafkaProducer
 
 class Camion(threading.Thread):
 
@@ -20,6 +23,8 @@ class Camion(threading.Thread):
         if mode == 'mqtt':
             self.client = mqtt.Client()
             self.client.connect("127.0.0.1", 8000, 60)
+        elif mode == 'kafka':
+            self.producer = KafkaProducer(bootstrap_servers='localhost:9092')
 
     def run(self):
         for entry in self.data:
@@ -28,6 +33,8 @@ class Camion(threading.Thread):
                     self.enviar_request_response(entry)
                 elif self.mode == "mqtt":
                     self.enviar_mqtt(entry)
+                elif self.mode == "kafka":
+                    self.enviar_kafka(entry)
                 else:
                     print("[{0}] {1}".format(self.camion, entry))
 
@@ -65,7 +72,18 @@ class Camion(threading.Thread):
 
         self.client.publish("gps", payload=data, qos=0, retain=False)
 
+    def enviar_kafka(self, entry):
+        parts = entry.split(",")
+        data = json.dumps({
+            "timestamp": time.time(),
+            "latitud": float(parts[0]),
+            "longitud": float(parts[1]),
+            "velocidad": int(parts[2]),
+            "id_vehiculo": self.camion
+        })
 
+        self.producer.send("gps-data-gateway", value=data)
+        self.producer.flush()
 
 print("Cargando datos ...")
 
