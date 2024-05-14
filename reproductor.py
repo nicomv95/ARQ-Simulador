@@ -4,7 +4,7 @@ import threading, time
 import requests
 import json
 
-MODO = "mqtt"
+MODO = "kafka"
 
 if MODO == "mqtt":
     import paho.mqtt.client as mqtt
