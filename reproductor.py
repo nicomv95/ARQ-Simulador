@@ -82,7 +82,7 @@ class Camion(threading.Thread):
             "id_vehiculo": self.camion
         })
 
-        self.producer.send("gps-data-gateway", value=data)
+        self.producer.send("gps-data-gateway", value=data.encode('utf-8'))
         self.producer.flush()
 
 print("Cargando datos ...")
